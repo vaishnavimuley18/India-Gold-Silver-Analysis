@@ -50,4 +50,5 @@ Small samples; mixed frequencies; periodic resource snapshots; gross vs net defi
 Monthly data, macro variables (FX, inflation, rates, income), festivals, global price, SARIMA.
 
 ## Authors
-Add your names here.
+Vaishnavi Muley
+
