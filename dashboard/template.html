@@ -1,0 +1,518 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>India Gold & Silver | Analytics Dashboard</title>
+<!--CHARTJS-->
+<style>
+:root{
+  --bg:#0a0e16;--bg2:#0f1520;--card:#121a28;--card2:#172136;--bd:#233049;--tx:#e9eef7;--mu:#8d9bb3;--mu2:#5f6c84;
+  --gold:#f2c14e;--gold2:#c99a2e;--silver:#aab6c9;--blue:#5aa9ff;--green:#3ddc97;--red:#ff6b6b;--purple:#a78bfa;--grid:rgba(255,255,255,.07);
+  --shadow:0 8px 28px rgba(0,0,0,.35);--hero1:#1b2438;--hero2:#2a2110;--chip:#1b2740;
+}
+:root[data-theme="light"]{
+  --bg:#f5f2ea;--bg2:#efebe0;--card:#ffffff;--card2:#faf7ef;--bd:#e4dec9;--tx:#1b2230;--mu:#68738a;--mu2:#97a0b2;
+  --gold:#b8860b;--gold2:#d9a521;--silver:#7d8aa0;--blue:#1f6feb;--green:#1a9e6b;--red:#d1344a;--purple:#7c5ce0;--grid:rgba(20,30,50,.08);
+  --shadow:0 6px 20px rgba(60,50,20,.10);--hero1:#fff8e1;--hero2:#fdf0c8;--chip:#f3ecd6;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.55 "Inter","Segoe UI",system-ui,-apple-system,Roboto,sans-serif;
+  background-image:radial-gradient(900px 400px at 85% -10%,rgba(242,193,78,.10),transparent 60%),radial-gradient(700px 400px at -10% 10%,rgba(90,169,255,.08),transparent 60%);
+  background-attachment:fixed}
+h1,h2,h3,p{margin:0}
+.wrap{max-width:1280px;margin:0 auto;padding:0 20px 40px}
+
+/* ---------- header ---------- */
+.top{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--bd)}
+.top .in{max-width:1280px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px;min-width:200px}
+.top nav{order:3;flex-basis:100%;margin-top:-2px}.tools{margin-left:auto}.top .in{row-gap:6px;padding-bottom:8px}
+.logo{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-weight:800;color:#2a1c00;letter-spacing:.5px;
+  background:linear-gradient(135deg,#ffe08a,#f2c14e 45%,#c99a2e);box-shadow:0 4px 14px rgba(242,193,78,.35)}
+.brand h1{font-size:16px;font-weight:700;letter-spacing:.2px}
+.brand p{font-size:11.5px;color:var(--mu)}
+nav{display:flex;gap:4px;flex:1;overflow-x:auto;scrollbar-width:none}
+nav::-webkit-scrollbar{display:none}
+nav button{background:none;border:0;color:var(--mu);font:inherit;font-weight:600;font-size:13px;padding:8px 12px;border-radius:10px;cursor:pointer;white-space:nowrap;transition:.15s}
+nav button:hover{color:var(--tx);background:var(--chip)}
+nav button.on{color:#2a1c00;background:linear-gradient(135deg,#ffe08a,#f2c14e);box-shadow:0 3px 12px rgba(242,193,78,.28)}
+.tools{display:flex;align-items:center;gap:10px}
+.tools label{font-size:11.5px;color:var(--mu);display:flex;align-items:center;gap:6px}
+select{background:var(--chip);color:var(--tx);border:1px solid var(--bd);border-radius:8px;padding:5px 8px;font:inherit;font-size:12.5px;cursor:pointer}
+select:focus{outline:2px solid var(--gold)}
+.ib{background:var(--chip);border:1px solid var(--bd);color:var(--tx);width:34px;height:34px;border-radius:10px;cursor:pointer;font-size:15px}
+.ib:hover{border-color:var(--gold)}
+.filters{transition:.2s}
+.hidef .filters{opacity:0;pointer-events:none}
+
+/* ---------- layout ---------- */
+.tab{display:none;animation:fade .35s ease}
+.tab.on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:16px;margin-top:16px}
+.s3{grid-column:span 3}.s4{grid-column:span 4}.s5{grid-column:span 5}.s6{grid-column:span 6}.s7{grid-column:span 7}.s8{grid-column:span 8}.s12{grid-column:span 12}
+@media(max-width:1000px){.s4,.s5,.s6,.s7,.s8{grid-column:span 12}.s3{grid-column:span 6}}
+@media(max-width:560px){.s3{grid-column:span 12}}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:16px 18px;box-shadow:var(--shadow);position:relative;min-width:0}
+.card h2{font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.card h2 .sp{flex:1}
+.card .sub{color:var(--mu);font-size:12px;margin:2px 0 10px}
+.ch{position:relative;height:300px}
+.ch.t{height:360px}.ch.s{height:230px}.ch.xl{height:430px}
+.note{color:var(--mu);font-size:12px;margin-top:10px;line-height:1.5}
+.note b{color:var(--tx)}
+
+/* hero */
+.hero{margin-top:20px;border-radius:20px;padding:26px 28px;border:1px solid var(--bd);position:relative;overflow:hidden;
+  background:linear-gradient(120deg,var(--hero1),var(--hero2))}
+.hero:after{content:"";position:absolute;right:-60px;top:-60px;width:260px;height:260px;border-radius:50%;
+  background:radial-gradient(circle,rgba(242,193,78,.35),transparent 65%)}
+.hero h2{font-size:26px;font-weight:800;letter-spacing:-.3px;max-width:760px;display:block}
+.hero h2 em{font-style:normal;background:linear-gradient(90deg,#ffe08a,#f2c14e,#c99a2e);-webkit-background-clip:text;background-clip:text;color:transparent}
+:root[data-theme="light"] .hero h2 em{background:linear-gradient(90deg,#9c6f00,#c99a2e);-webkit-background-clip:text;background-clip:text}
+.hero p{color:var(--mu);max-width:760px;margin-top:8px;position:relative;z-index:1}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;position:relative;z-index:1}
+.chip{background:var(--chip);border:1px solid var(--bd);color:var(--mu);border-radius:999px;padding:3px 11px;font-size:11.5px}
+.chip b{color:var(--tx)}
+
+/* KPI */
+.kpi{padding:14px 16px 12px;overflow:hidden}
+.kpi .l{color:var(--mu);font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.6px}
+.kpi .v{font-size:26px;font-weight:800;letter-spacing:-.5px;margin-top:2px;line-height:1.15}
+.kpi .d{font-size:12px;margin-top:3px;color:var(--mu)}
+.up{color:var(--green)}.dn{color:var(--red)}
+.kpi .bar{position:absolute;left:0;top:0;bottom:0;width:4px}
+.kpi .sk{position:absolute;right:12px;top:12px;width:84px;height:34px}
+.k-gold .bar{background:var(--gold)}.k-blue .bar{background:var(--blue)}.k-green .bar{background:var(--green)}.k-red .bar{background:var(--red)}.k-purple .bar{background:var(--purple)}.k-silver .bar{background:var(--silver)}
+
+/* findings */
+.find{display:flex;flex-direction:column;gap:11px;margin-top:6px}
+.f{display:flex;gap:12px;align-items:flex-start}
+.f i{flex:none;width:26px;height:26px;border-radius:8px;display:grid;place-items:center;font-style:normal;font-weight:800;font-size:12px;color:#2a1c00;background:linear-gradient(135deg,#ffe08a,#f2c14e)}
+.f div{font-size:13px;line-height:1.45}.f b{color:var(--gold)}
+
+/* tables */
+.w{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th{color:var(--mu);font-weight:600;text-align:right;font-size:11px;text-transform:uppercase;letter-spacing:.5px;padding:8px 10px;border-bottom:1px solid var(--bd);white-space:nowrap}
+td{padding:8px 10px;border-bottom:1px solid var(--bd);text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+td.l,th.l{text-align:left}td.wrapc{white-space:normal;min-width:200px}
+tr:hover td{background:var(--card2)}
+.badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:700}
+.b-g{background:rgba(61,220,151,.15);color:var(--green)}.b-r{background:rgba(255,107,107,.15);color:var(--red)}.b-y{background:rgba(242,193,78,.16);color:var(--gold)}.b-m{background:var(--chip);color:var(--mu)}
+.meter{display:inline-block;height:7px;border-radius:4px;background:linear-gradient(90deg,var(--gold2),var(--gold));vertical-align:middle;margin-left:8px}
+.seg{display:inline-flex;background:var(--chip);border:1px solid var(--bd);border-radius:10px;padding:2px}
+.seg button{border:0;background:none;color:var(--mu);font:inherit;font-size:12px;font-weight:600;padding:4px 11px;border-radius:8px;cursor:pointer}
+.seg button.on{background:var(--gold);color:#2a1c00}
+:root[data-theme="light"] .seg button.on{color:#fff}
+.stat{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.stat div{background:var(--chip);border:1px solid var(--bd);border-radius:10px;padding:6px 12px;font-size:12px;color:var(--mu)}
+.stat b{display:block;font-size:16px;color:var(--tx)}
+
+/* heatmap */
+.hm td{text-align:center;padding:7px 6px;font-weight:600;border:2px solid var(--card)}
+.hm th{text-align:center}
+.hm td.y{font-weight:700;color:var(--mu);text-align:left}
+
+/* scenarios */
+.sc{background:var(--card2);border:1px solid var(--bd);border-radius:14px;padding:14px 16px}
+.sc .t{font-size:12px;color:var(--mu);font-weight:600}.sc .p{font-size:19px;font-weight:800;margin:2px 0 8px}
+.sc .r{display:flex;justify-content:space-between;font-size:12.5px;padding:4px 0;border-top:1px dashed var(--bd)}
+.sc .r span:first-child{color:var(--mu)}
+.callout{border-left:4px solid var(--gold);background:var(--card2);padding:10px 14px;border-radius:0 10px 10px 0;font-size:12.5px;color:var(--mu);margin-top:12px}
+.callout b{color:var(--tx)}
+footer{margin-top:30px;color:var(--mu2);font-size:11.5px;text-align:center;line-height:1.7}
+.rtitle{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<header class="top"><div class="in">
+  <div class="brand"><div class="logo">Au</div><div><h1>India Gold &amp; Silver</h1><p>Prices · Demand · Supply · Resources</p></div></div>
+  <nav id="nav"></nav>
+  <div class="tools">
+    <span class="filters" style="display:flex;gap:10px;align-items:center">
+      <label>From <select id="yf"></select></label><label>To <select id="yt"></select></label>
+    </span>
+    <button class="ib" id="th" title="Switch light / dark theme">☀</button>
+  </div>
+</div></header>
+
+<div class="wrap">
+
+<!-- ================= OVERVIEW ================= -->
+<section class="tab on" id="t-overview">
+  <div class="hero">
+    <h2>India's gold &amp; silver at a glance: <em>what moves prices, demand and supply</em></h2>
+    <p>A data-driven view of how gold prices relate to Indian demand, how much the country depends on imports, and where its gold and silver resources actually sit.</p>
+    <div class="chips" id="chips"></div>
+  </div>
+  <div class="grid" id="kpis"></div>
+  <div class="grid">
+    <div class="card s8"><h2>Gold price <span class="sp"></span><small style="color:var(--mu);font-weight:500">INR per 10 g, quarterly average</small></h2>
+      <div class="sub">Red band = COVID-19 window (Mar 2020 – Jun 2022) used in the robustness checks.</div><div class="ch"><canvas id="c-price"></canvas></div></div>
+    <div class="card s4"><h2>Key findings</h2><div class="sub">Generated live from the analysis tables</div><div class="find" id="finds"></div></div>
+    <div class="card s8"><h2>Gold demand by sector <span class="sp"></span><small style="color:var(--mu);font-weight:500">tonnes per quarter</small></h2>
+      <div class="sub">Demand = jewellery + bar &amp; coin (ETF and industrial are not available for India in the supplied data).</div><div class="ch"><canvas id="c-demand"></canvas></div></div>
+    <div class="card s4"><h2>Latest quarter mix</h2><div class="sub" id="mixsub"></div><div class="ch s"><canvas id="c-mix"></canvas></div><div class="stat" id="mixstat"></div></div>
+    <div class="card s12"><h2>Annual gold demand <span class="sp"></span><small style="color:var(--mu);font-weight:500">tonnes per calendar year (complete years only)</small></h2>
+      <div class="ch s"><canvas id="c-annual"></canvas></div></div>
+  </div>
+</section>
+
+<!-- ================= PRICE & DEMAND ================= -->
+<section class="tab" id="t-pd">
+  <div class="grid">
+    <div class="card s12"><h2>Do higher prices reduce demand? <span class="sp"></span>
+      <span class="seg" id="seg-series"></span><span class="seg" id="seg-basis"></span></h2>
+      <div class="sub">Each dot is one quarter. The gold line is the fitted regression for the selected period; red dots fall in the COVID window.</div>
+      <div class="ch xl"><canvas id="c-scatter"></canvas></div>
+      <div class="stat" id="scstat"></div>
+      <div class="note" id="scnote"></div></div>
+    <div class="card s6"><h2>Year-on-year change: price vs demand</h2><div class="sub">Same unit (% change vs same quarter last year), so no dual-axis distortion.</div><div class="ch"><canvas id="c-yoy"></canvas></div></div>
+    <div class="card s6"><h2>Correlation strength (Pearson r)</h2><div class="sub">Price vs demand. Solid = significant at 5%; faded = not significant.</div><div class="ch"><canvas id="c-corr"></canvas></div>
+      <div class="note">Levels compare raw values; YoY compares growth rates and avoids false links caused by both series trending over time.</div></div>
+    <div class="card s7"><h2>Elasticity robustness <span class="sp"></span><small style="color:var(--mu);font-weight:500">YoY log-log slope, 95% CI (Newey-West)</small></h2>
+      <div class="sub">Slope = % change in demand for a 1% change in price. Below −1 = elastic. Interval crossing 0 = inconclusive.</div><div class="ch xl"><canvas id="c-forest"></canvas></div></div>
+    <div class="card s5"><h2>Hypothesis tests</h2><div class="sub">Correlation t-tests at α = 0.05. H0: no association.</div><div class="w"><table id="t-hyp"></table></div>
+      <div class="callout"><b>Association, not causation.</b> A negative link means higher-price quarters tend to have lower demand, not that price alone caused it.</div></div>
+  </div>
+</section>
+
+<!-- ================= DEMAND PATTERNS ================= -->
+<section class="tab" id="t-pat">
+  <div class="grid">
+    <div class="card s5"><h2>Seasonality: average demand by quarter</h2><div class="sub">Mean tonnes with ±1 standard deviation (selected period).</div><div class="ch"><canvas id="c-season"></canvas></div><div class="note" id="seasonnote"></div></div>
+    <div class="card s7"><h2>Jewellery vs bar &amp; coin share</h2><div class="sub">Share of annual gold demand, complete years in selected period.</div><div class="ch"><canvas id="c-share"></canvas></div></div>
+    <div class="card s12"><h2>Demand heatmap <span class="sp"></span><small style="color:var(--mu);font-weight:500">total gold demand (t), year × quarter</small></h2>
+      <div class="sub">Darker gold = higher demand. Hover a cell for the jewellery / bar &amp; coin split.</div><div class="w"><table class="hm" id="t-hm"></table></div></div>
+    <div class="card s6"><h2>Jewellery demand over time</h2><div class="ch"><canvas id="c-jew"></canvas></div></div>
+    <div class="card s6"><h2>Bar &amp; coin (investment) demand over time</h2><div class="ch"><canvas id="c-bar"></canvas></div></div>
+  </div>
+</section>
+
+<!-- ================= RESOURCES ================= -->
+<section class="tab" id="t-res">
+  <div class="grid">
+    <div class="card s12 rtitle">
+      <h2 style="font-size:16px">Mineral resources by state</h2><span class="seg" id="seg-metal"></span>
+      <span class="sub" style="margin:0">Snapshot as on 1 April 2025 (Indian Bureau of Mines, NMI 2025). Metal content in tonnes.</span>
+    </div>
+  </div>
+  <div class="grid" id="res-kpis"></div>
+  <div class="grid">
+    <div class="card s7"><h2>Top states: reserves vs remaining resources</h2><div class="sub">Full bar = total resources. Gold part = proven reserves; grey = remaining resources.</div><div class="ch t"><canvas id="c-res"></canvas></div></div>
+    <div class="card s5"><h2>Concentration</h2><div class="sub">Share of all-India resources</div><div class="ch t"><canvas id="c-conc"></canvas></div></div>
+    <div class="card s12"><h2>All states</h2><div class="w"><table id="t-res-all"></table></div>
+      <div class="callout"><b>Resources are not reserves, and neither is RBI gold.</b> Resources are geological estimates; reserves are the economically mineable portion; RBI gold holdings are monetary reserves. They are never added together here.</div></div>
+  </div>
+</section>
+
+<!-- ================= SUPPLY ================= -->
+<section class="tab" id="t-sup">
+  <div class="grid" id="sup-kpis"></div>
+  <div class="grid">
+    <div class="card s7"><h2>Gold supply composition <span class="sp"></span><small style="color:var(--mu);font-weight:500">tonnes per year (WGC)</small></h2><div class="sub">Net bullion imports + scrap (recycled) + other domestic supply.</div><div class="ch t"><canvas id="c-supply"></canvas></div></div>
+    <div class="card s5"><h2>Import dependence</h2><div class="sub">Net imports and scrap as % of total gold supply</div><div class="ch t"><canvas id="c-dep"></canvas></div>
+      <div class="note">Mine output is under 20 t a year against supply of several hundred tonnes, so supply is overwhelmingly imported or recycled.</div></div>
+    <div class="card s6"><h2>Domestic gold mine production</h2><div class="sub">Metal production, tonnes (fiscal year labelled by start year)</div><div class="ch"><canvas id="c-gprod"></canvas></div></div>
+    <div class="card s6"><h2>Silver: production, imports and exports</h2><div class="sub">Production FY2013–2023; trade data for FY2021–2023 only</div><div class="ch"><canvas id="c-silver"></canvas></div></div>
+    <div class="card s12"><h2>Cross-check against WGC India Focus report</h2><div class="sub">Our demand (jewellery + bar &amp; coin) vs WGC's headline total, which also includes ETF and industrial demand.</div>
+      <div class="w"><table id="t-cross"></table></div></div>
+  </div>
+</section>
+
+<!-- ================= MODELS ================= -->
+<section class="tab" id="t-mod">
+  <div class="grid">
+    <div class="card s5"><h2>Which model predicts best?</h2><div class="sub">Walk-forward back-test, 16 quarters. Lower RMSE (tonnes) is better.</div><div class="ch"><canvas id="c-rmse"></canvas></div></div>
+    <div class="card s7"><h2>Model scorecard</h2><div class="sub">Tested on quarters the model had never seen.</div><div class="w"><table id="t-mod-tab"></table></div>
+      <div class="callout"><b>Takeaway:</b> a simple <b>seasonal naive</b> (repeat last year's same quarter) beat every price-based model. Price adds little predictive power beyond seasonality here.</div></div>
+    <div class="card s8"><h2>Actual vs predicted demand <span class="sp"></span><small style="color:var(--mu);font-weight:500">tonnes · click legend to toggle</small></h2><div class="ch t"><canvas id="c-bt"></canvas></div></div>
+    <div class="card s4"><h2>What the Random Forest used</h2><div class="sub">Feature importance (v1 model)</div><div class="ch t"><canvas id="c-fi"></canvas></div></div>
+    <div class="card s12"><h2>Conditional scenarios for next quarter <span class="sp"></span><small style="color:var(--mu);font-weight:500" id="scperiod"></small></h2>
+      <div class="sub">"If the price were X, what demand would we expect?" Scenarios, not forecasts.</div>
+      <div class="grid" id="scen" style="margin-top:6px"></div>
+      <div class="callout" id="scnote2"></div></div>
+  </div>
+</section>
+
+<!-- ================= ABOUT ================= -->
+<section class="tab" id="t-about">
+  <div class="grid">
+    <div class="card s7"><h2>Data sources</h2><div class="w"><table id="t-src"></table></div></div>
+    <div class="card s5"><h2>Definitions &amp; caveats</h2><div class="find" style="gap:9px" id="defs"></div></div>
+    <div class="card s12"><h2>Data gaps (nothing was estimated or fabricated)</h2>
+      <div class="chips" style="margin-top:10px">
+        <span class="chip"><b>Silver price &amp; demand</b> (Silver Institute) not supplied, so hypothesis H4 not tested</span>
+        <span class="chip"><b>RBI gold holdings</b> time series not supplied</span>
+        <span class="chip"><b>India ETF demand</b> series not available</span>
+        <span class="chip"><b>State boundary GeoJSON</b> needed only for a Power BI filled map</span>
+      </div></div>
+  </div>
+</section>
+
+<footer>Sources: World Gold Council (Gold Demand Trends Q2 2026), Indian Bureau of Mines (NMI 2025, IMYB 2024). Statistics show association, not causation. Resources ≠ reserves ≠ RBI holdings.</footer>
+</div>
+
+<script>
+const D=/*DATA*/null;
+
+/* ============ helpers ============ */
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const cv=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const al=(hex,a)=>{hex=hex.replace('#','');if(hex.length==3)hex=hex.split('').map(x=>x+x).join('');const n=parseInt(hex,16);return`rgba(${n>>16},${(n>>8)&255},${n&255},${a})`};
+const f=(v,d=0)=>{if(v==null||isNaN(v))return'–';const s=Number(v).toLocaleString('en-IN',{maximumFractionDigits:d,minimumFractionDigits:d});return /^-0(\.0+)?$/.test(s)?s.slice(1):s};
+const pct=(v,d=1)=>v==null?'–':(v>0?'+':'')+f(v,d)+'%';
+const lg2p=x=>x==null?null:(Math.exp(x)-1)*100;
+const mean=a=>a.reduce((s,x)=>s+x,0)/a.length;
+const sd=a=>{const m=mean(a);return Math.sqrt(a.reduce((s,x)=>s+(x-m)**2,0)/(a.length-1||1))};
+const COVID=['2020-03-31','2022-06-30'];
+const isCovid=d=>d>=COVID[0]&&d<=COVID[1];
+const charts={};
+const S={from:2010,to:2026,series:'jy',basis:'yoy',metal:'Gold',tab:'overview',theme:'dark'};
+const years=[...new Set(D.q.map(r=>r.y))];
+const Q=()=>D.q.filter(r=>r.y>=S.from&&r.y<=S.to);
+const fullYears=rows=>{const m={};rows.forEach(r=>{(m[r.y]=m[r.y]||[]).push(r)});return Object.entries(m).filter(([y,a])=>a.length==4).map(([y,a])=>({y:+y,jew:a.reduce((s,r)=>s+r.jew,0),bar:a.reduce((s,r)=>s+r.bar,0),dem:a.reduce((s,r)=>s+r.dem,0)}))};
+
+/* ============ chart plumbing ============ */
+const covidPlugin={id:'covid',beforeDatasetsDraw(c,_,o){if(!o||!o.dates)return;const x=c.scales.x;if(!x)return;const idx=o.dates.map((d,i)=>isCovid(d)?i:-1).filter(i=>i>=0);if(!idx.length)return;
+  const a=x.getPixelForValue(idx[0]),b=x.getPixelForValue(idx[idx.length-1]),w=Math.abs(x.getPixelForValue(1)-x.getPixelForValue(0))/2||0,{top,bottom}=c.chartArea,ctx=c.ctx;
+  ctx.save();ctx.fillStyle=al(cv('--red'),.10);ctx.fillRect(a-w,top,b-a+2*w,bottom-top);ctx.restore()}};
+const zeroPlugin={id:'zero',afterDatasetsDraw(c,_,o){if(!o||!o.axis)return;const s=c.scales[o.axis];if(!s)return;const p=s.getPixelForValue(0),{top,bottom,left,right}=c.chartArea,ctx=c.ctx;ctx.save();ctx.strokeStyle=cv('--mu');ctx.setLineDash([4,4]);ctx.lineWidth=1;ctx.beginPath();
+  if(o.axis=='x'){ctx.moveTo(p,top);ctx.lineTo(p,bottom)}else{ctx.moveTo(left,p);ctx.lineTo(right,p)}ctx.stroke();ctx.restore()}};
+const forestPlugin={id:'forest',afterDatasetsDraw(c,_,o){if(!o||!o.pts)return;const m=c.getDatasetMeta(0),x=c.scales.x,ctx=c.ctx;
+  o.pts.forEach((v,i)=>{const el=m.data[i];if(!el)return;const px=x.getPixelForValue(v),py=el.y,r=6;ctx.save();ctx.fillStyle=o.sig[i]?cv('--gold'):cv('--silver');ctx.strokeStyle=cv('--card');ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(px,py-r);ctx.lineTo(px+r,py);ctx.lineTo(px,py+r);ctx.lineTo(px-r,py);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore()})}};
+Chart.register(covidPlugin,zeroPlugin,forestPlugin);
+
+function applyDefaults(){
+  Chart.defaults.color=cv('--mu');Chart.defaults.font.family='Inter,"Segoe UI",system-ui,sans-serif';Chart.defaults.font.size=11.5;
+  Chart.defaults.borderColor=cv('--grid');Chart.defaults.maintainAspectRatio=false;Chart.defaults.responsive=true;
+  const t=Chart.defaults.plugins.tooltip;t.backgroundColor=cv('--card2');t.titleColor=cv('--tx');t.bodyColor=cv('--tx');t.borderColor=cv('--bd');t.borderWidth=1;t.padding=10;t.cornerRadius=10;t.boxPadding=4;
+  Chart.defaults.plugins.legend.labels.usePointStyle=true;Chart.defaults.plugins.legend.labels.boxWidth=8;Chart.defaults.plugins.legend.labels.padding=14;
+}
+function mk(id,cfg){if(charts[id])charts[id].destroy();const el=document.getElementById(id);if(!el)return null;return charts[id]=new Chart(el,cfg)}
+const grid=()=>({color:cv('--grid'),drawTicks:false});
+const ax=(o={})=>Object.assign({grid:grid(),border:{display:false},ticks:{padding:6}},o);
+function gradient(ctx,color,h=300,a1=.35,a2=0){const g=ctx.createLinearGradient(0,0,0,h);g.addColorStop(0,al(color,a1));g.addColorStop(1,al(color,a2));return g}
+
+/* ============ tabs ============ */
+const TABS=[['overview','Overview'],['pd','Price & Demand'],['pat','Demand Patterns'],['res','Resources'],['sup','Supply & Imports'],['mod','Models'],['about','About']];
+const FILTERED=['overview','pd','pat'];
+$('#nav').innerHTML=TABS.map(t=>`<button data-t="${t[0]}">${t[1]}</button>`).join('');
+$('#nav').onclick=e=>{const b=e.target.closest('button');if(b)show(b.dataset.t)};
+const RENDER={overview:()=>overview(),pd:()=>renderPD(),pat:()=>renderPat(),res:()=>renderRes(),sup:()=>renderSup(),mod:()=>renderMod(),about:()=>renderAbout()};
+function show(t){S.tab=t;$$('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.t==t));$$('.tab').forEach(s=>s.classList.toggle('on',s.id=='t-'+t));
+  document.body.classList.toggle('hidef',!FILTERED.includes(t));render();window.scrollTo({top:0,behavior:'smooth'})}
+function render(){RENDER[S.tab]()}
+
+/* year filters */
+['#yf','#yt'].forEach((s,i)=>{years.forEach(y=>$(s).add(new Option(y,y)));$(s).value=i?S.to:S.from});
+$('#yf').onchange=e=>{S.from=+e.target.value;if(S.from>S.to){S.to=S.from;$('#yt').value=S.to}render()};
+$('#yt').onchange=e=>{S.to=+e.target.value;if(S.to<S.from){S.from=S.to;$('#yf').value=S.from}render()};
+$('#th').onclick=()=>{S.theme=S.theme=='dark'?'light':'dark';document.documentElement.dataset.theme=S.theme;$('#th').textContent=S.theme=='dark'?'☀':'☾';applyDefaults();render()};
+
+function seg(id,opts,key,cb){const el=$(id);el.innerHTML=opts.map(o=>`<button data-v="${o[0]}" class="${S[key]==o[0]?'on':''}">${o[1]}</button>`).join('');
+  el.onclick=e=>{const b=e.target.closest('button');if(!b)return;S[key]=b.dataset.v;cb()}}
+
+function kpi(cls,label,val,delta,sparkId,span='s3'){return`<div class="card kpi ${cls} ${span}"><span class="bar"></span><div class="l">${label}</div><div class="v">${val}</div><div class="d">${delta}</div>${sparkId?`<div class="sk"><canvas id="${sparkId}"></canvas></div>`:''}</div>`}
+function spark(id,data,color){mk(id,{type:'line',data:{labels:data.map((_,i)=>i),datasets:[{data,borderColor:cv(color),borderWidth:2,pointRadius:0,tension:.35,fill:false}]},
+  options:{plugins:{legend:{display:false},tooltip:{enabled:false}},scales:{x:{display:false},y:{display:false}},animation:false,events:[]}})}
+
+/* ============ OVERVIEW ============ */
+function overview(){
+  const all=D.q,L=all[all.length-1],P=all.find(r=>r.qn==L.qn&&r.y==L.y-1),first=all[0];
+  const mult=L.price/first.price,cagr=(Math.pow(mult,1/((all.length-1)/4))-1)*100;
+  const peak=all.reduce((a,b)=>b.dem>a.dem?b:a);
+  const rob=D.rob.find(r=>r.series=='Jewellery demand'&&r.sample.startsWith('Full'));
+  const A=D.a.filter(r=>r.nis!=null),AL=A[A.length-1];
+  const gold=D.res.filter(r=>r.m=='Gold'),silver=D.res.filter(r=>r.m=='Silver');
+  const sumR=a=>a.reduce((s,r)=>s+(r.res||0),0);
+  $('#chips').innerHTML=[`<span class="chip">Period <b>${all[0].p} – ${L.p}</b></span>`,`<span class="chip"><b>${all.length}</b> quarters of data</span>`,`<span class="chip">Sources <b>WGC · IBM</b></span>`,`<span class="chip">Latest quarter <b>${L.p}</b></span>`].join('');
+  const yoyP=(L.price/P.price-1)*100,yoyD=(L.dem/P.dem-1)*100;
+  $('#kpis').innerHTML=
+   kpi('k-gold',`Gold price · ${L.p}`,`₹${f(L.price)}`,`<span class="${yoyP>=0?'up':'dn'}">${pct(yoyP)}</span> vs ${P.p} · per 10 g`,'sp1')+
+   kpi('k-blue',`Gold demand · ${L.p}`,`${f(L.dem,1)} t`,`<span class="${yoyD>=0?'up':'dn'}">${pct(yoyD)}</span> vs ${P.p}`,'sp2')+
+   kpi('k-green','Price rise since 2010',`${f(mult,1)}×`,`≈ ${f(cagr,1)}% a year (CAGR)`)+
+   kpi('k-purple','Peak quarterly demand',`${f(peak.dem,0)} t`,peak.p)+
+   kpi('k-red','Jewellery price elasticity',f(rob.elasticity,2),`YoY, CI ${f(rob.ci_low,2)} to ${f(rob.ci_high,2)}`)+
+   kpi('k-silver',`Import dependence · ${AL.y}`,`${f(AL.nis,1)}%`,'net bullion imports ÷ total supply')+
+   kpi('k-gold','Gold resources (India)',`${f(sumR(gold),0)} t`,`${gold.length} states · metal content`)+
+   kpi('k-blue','Silver resources (India)',`${f(sumR(silver),0)} t`,`${silver.length} states · metal content`);
+  spark('sp1',all.slice(-24).map(r=>r.price),'--gold');spark('sp2',all.slice(-24).map(r=>r.dem),'--blue');
+
+  const R=Q(),lab=R.map(r=>r.p),dates=R.map(r=>r.d);
+  const c1=$('#c-price').getContext('2d');
+  mk('c-price',{type:'line',data:{labels:lab,datasets:[{label:'INR per 10 g',data:R.map(r=>r.price),borderColor:cv('--gold'),backgroundColor:gradient(c1,cv('--gold'),300,.4,0),fill:true,tension:.3,pointRadius:0,pointHoverRadius:5,borderWidth:2.5}]},
+    options:{interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},covid:{dates},tooltip:{callbacks:{label:c=>' ₹'+f(c.parsed.y)+' per 10 g'}}},scales:{x:ax({ticks:{maxTicksLimit:9}}),y:ax({ticks:{callback:v=>'₹'+f(v/1000)+'k'}})}}});
+  mk('c-demand',{type:'bar',data:{labels:lab,datasets:[{label:'Jewellery',data:R.map(r=>r.jew),backgroundColor:cv('--gold'),borderRadius:3,stack:'a'},{label:'Bar & coin',data:R.map(r=>r.bar),backgroundColor:cv('--blue'),borderRadius:3,stack:'a'}]},
+    options:{interaction:{mode:'index',intersect:false},plugins:{covid:{dates},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${f(c.parsed.y,1)} t`,footer:i=>'Total: '+f(i.reduce((s,x)=>s+x.parsed.y,0),1)+' t'}}},scales:{x:ax({stacked:true,ticks:{maxTicksLimit:9}}),y:ax({stacked:true,title:{display:true,text:'tonnes'}})}}});
+  $('#mixsub').textContent=`${L.p}, total ${f(L.dem,1)} t`;
+  mk('c-mix',{type:'doughnut',data:{labels:['Jewellery','Bar & coin'],datasets:[{data:[L.jew,L.bar],backgroundColor:[cv('--gold'),cv('--blue')],borderColor:cv('--card'),borderWidth:3,hoverOffset:6}]},
+    options:{cutout:'66%',plugins:{legend:{position:'bottom'},tooltip:{callbacks:{label:c=>` ${c.label}: ${f(c.parsed,1)} t (${f(c.parsed/L.dem*100,0)}%)`}}}}});
+  $('#mixstat').innerHTML=`<div>Jewellery<b>${f(L.jew/L.dem*100,0)}%</b></div><div>Bar &amp; coin<b>${f(L.bar/L.dem*100,0)}%</b></div>`;
+  const ya=fullYears(R);
+  mk('c-annual',{type:'bar',data:{labels:ya.map(r=>r.y),datasets:[{label:'Jewellery',data:ya.map(r=>r.jew),backgroundColor:cv('--gold'),borderRadius:4,stack:'a'},{label:'Bar & coin',data:ya.map(r=>r.bar),backgroundColor:cv('--blue'),borderRadius:4,stack:'a'}]},
+    options:{interaction:{mode:'index',intersect:false},plugins:{tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${f(c.parsed.y,0)} t`,footer:i=>'Total: '+f(i.reduce((s,x)=>s+x.parsed.y,0),0)+' t'}}},scales:{x:ax({stacked:true,grid:{display:false}}),y:ax({stacked:true,title:{display:true,text:'tonnes'}})}}});
+
+  // findings
+  const jh=D.hyp.find(h=>h.hypothesis.startsWith('H3')&&h.hypothesis.includes('YoY'));
+  const seas={};all.forEach(r=>(seas[r.qn]=seas[r.qn]||[]).push(r.dem));const sm=Object.entries(seas).map(([k,v])=>[+k,mean(v)]).sort((a,b)=>b[1]-a[1]);
+  const topS=sm[0],lowS=sm[sm.length-1],mcb=[...D.mc].sort((a,b)=>a.RMSE-b.RMSE)[0],oth=[...D.mc].filter(m=>!m.Model.startsWith('Seasonal')&&!m.Model.startsWith('Naive')).sort((a,b)=>a.RMSE-b.RMSE)[0];
+  const top5=g=>{const a=D.res.filter(r=>r.m==g).sort((x,y)=>y.res-x.res),t=sumR(a);return a.slice(0,5).reduce((s,r)=>s+r.res,0)/t*100};
+  const rj=D.res.filter(r=>r.m=='Silver').sort((a,b)=>b.res-a.res)[0];
+  const F=[
+   `Jewellery demand is <b>price-sensitive</b>: a 1% price rise goes with about <b>${f(Math.abs(rob.elasticity),2)}%</b> lower demand (significant).`,
+   `Bar &amp; coin demand shows <b>no significant link</b> to price (p = ${f(jh.p_value,2)}). Investors do not simply pull back when prices rise.`,
+   `<b>Q${topS[0]}</b> is the strongest quarter (avg ${f(topS[1],0)} t), Q${lowS[0]} the weakest (${f(lowS[1],0)} t).`,
+   `India relies on imports for about <b>${f(AL.nis,0)}%</b> of gold supply; scrap adds ~${f(AL.scs,0)}%.`,
+   `Resources are concentrated: top 5 states hold <b>${f(top5('Gold'),0)}%</b> of gold and <b>${f(top5('Silver'),1)}%</b> of silver (${rj.s} alone ${f(rj.sh,0)}%).`,
+   `Forecasting: <b>seasonal naive</b> (RMSE ${f(mcb.RMSE,1)} t) beat the best price-based model (${f(oth.RMSE,1)} t).`];
+  $('#finds').innerHTML=F.map((t,i)=>`<div class="f"><i>${i+1}</i><div>${t}</div></div>`).join('');
+}
+
+/* ============ PRICE & DEMAND ============ */
+const SER={jy:['Jewellery demand','jew','Jewellery'],ty:['Total demand','dem','Total'],by:['Investment (bar & coin) demand','bar','Bar & coin']};
+function renderPD(){
+  seg('#seg-series',[['jy','Jewellery'],['ty','Total'],['by','Bar & coin']],'series',renderPD);
+  seg('#seg-basis',[['yoy','YoY change'],['lvl','Levels']],'basis',renderPD);
+  const R=Q(),k=S.series,yo=S.basis=='yoy',[robName,lvl,nice]=SER[k];
+  const pts=R.filter(r=>yo?(r[k]!=null&&r.py!=null):true).map(r=>({x:yo?r.py:r.price,y:yo?r[k]:r[lvl],p:r.p,c:isCovid(r.d)}));
+  const n=pts.length;let line=[],stat='';
+  if(n>2){const mx=mean(pts.map(p=>p.x)),my=mean(pts.map(p=>p.y)),sxy=pts.reduce((s,p)=>s+(p.x-mx)*(p.y-my),0),sxx=pts.reduce((s,p)=>s+(p.x-mx)**2,0),syy=pts.reduce((s,p)=>s+(p.y-my)**2,0);
+    const b=sxy/sxx,a=my-b*mx,r=sxy/Math.sqrt(sxx*syy),xs=pts.map(p=>p.x),x0=Math.min(...xs),x1=Math.max(...xs);line=[{x:x0,y:a+b*x0},{x:x1,y:a+b*x1}];
+    const t=r*Math.sqrt((n-2)/(1-r*r));
+    stat=`<div>Quarters<b>${n}</b></div><div>Correlation r<b>${f(r,2)}</b></div><div>R²<b>${f(r*r,2)}</b></div><div>Slope<b>${yo?f(b,2):f(b,5)}</b></div><div>t-stat<b>${f(t,2)}</b></div>`}
+  $('#scstat').innerHTML=stat||'<div>Select a wider period</div>';
+  const fe=D.rob.find(r=>r.series==robName&&r.sample.startsWith('Full')).elasticity;
+  $('#scnote').innerHTML=yo?`<b>Reading the chart:</b> the slope is the price elasticity of demand. Full-sample estimate with Newey-West errors: <b>${f(fe,2)}</b>. The stats above recompute for your selected period.`:
+   `<b>Reading the chart:</b> raw levels, so both series trend over time and correlations can mislead. Compare with the YoY view.`;
+  mk('c-scatter',{type:'scatter',data:{datasets:[
+    {label:'Quarters',data:pts.filter(p=>!p.c),backgroundColor:al(cv('--blue'),.75),pointRadius:5,pointHoverRadius:8},
+    {label:'COVID window',data:pts.filter(p=>p.c),backgroundColor:al(cv('--red'),.85),pointRadius:5,pointHoverRadius:8},
+    {type:'line',label:'Regression fit',data:line,borderColor:cv('--gold'),borderWidth:2.5,pointRadius:0}]},
+    options:{plugins:{tooltip:{callbacks:{label:c=>{const p=c.raw;return c.dataset.type=='line'?'Regression fit':` ${p.p||''}: price ${yo?f(p.x,2):'₹'+f(p.x)}, demand ${yo?f(p.y,2):f(p.y,1)+' t'}`}}}},
+      scales:{x:ax({title:{display:true,text:yo?'YoY log change in price (0.10 ≈ +10%)':'Gold price, INR per 10 g'}}),y:ax({title:{display:true,text:yo?`YoY log change in ${nice.toLowerCase()} demand`:`${nice} demand, tonnes`}})}}});
+
+  const lab=R.map(r=>r.p),dates=R.map(r=>r.d);
+  mk('c-yoy',{type:'line',data:{labels:lab,datasets:[{label:'Gold price',data:R.map(r=>lg2p(r.py)),borderColor:cv('--gold'),borderWidth:2.5,pointRadius:0,tension:.25,spanGaps:true},
+    {label:nice+' demand',data:R.map(r=>lg2p(r[k])),borderColor:cv('--blue'),borderWidth:2,pointRadius:0,tension:.25,spanGaps:true}]},
+    options:{interaction:{mode:'index',intersect:false},plugins:{covid:{dates},zero:{axis:'y'},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${pct(c.parsed.y,1)}`}}},scales:{x:ax({ticks:{maxTicksLimit:9}}),y:ax({ticks:{callback:v=>v+'%'}})}}});
+
+  const rel=(nm,b)=>D.rel.find(r=>r.analysis.toLowerCase().includes(nm)&&r.basis==b);
+  const names=[['Total demand','total'],['Jewellery','jewellery'],['Bar & coin','investment']];
+  const ds=['levels','yoy_log_change'].map((b,i)=>({label:i?'YoY change':'Levels',data:names.map(n=>rel(n[1],b).pearson_r),
+    backgroundColor:names.map(n=>al(i?cv('--gold'):cv('--blue'),rel(n[1],b).pearson_p<.05?.95:.3)),borderColor:i?cv('--gold'):cv('--blue'),borderWidth:1.5,borderRadius:6,_p:names.map(n=>rel(n[1],b).pearson_p),_n:names.map(n=>rel(n[1],b).n)}));
+  mk('c-corr',{type:'bar',data:{labels:names.map(n=>n[0]),datasets:ds},options:{plugins:{zero:{axis:'y'},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: r = ${f(c.parsed.y,2)} (p = ${f(c.dataset._p[c.dataIndex],3)}, n = ${c.dataset._n[c.dataIndex]})`}}},
+    scales:{x:ax({grid:{display:false}}),y:ax({min:-.6,max:.3,title:{display:true,text:'Pearson r'}})}}});
+
+  const rows=D.rob.map(r=>({l:`${r.series.replace(' (bar & coin)','').replace(' demand','')} · ${r.sample.replace(' (HAC)','').replace(' only','')}`,lo:r.ci_low,hi:r.ci_high,e:r.elasticity,sig:r.significant_5pct,p:r.p_value_hac,n:r.n}));
+  mk('c-forest',{type:'bar',data:{labels:rows.map(r=>r.l),datasets:[{data:rows.map(r=>[r.lo,r.hi]),backgroundColor:rows.map(r=>al(r.sig?cv('--gold'):cv('--silver'),.45)),borderColor:rows.map(r=>r.sig?cv('--gold'):cv('--silver')),borderWidth:1.5,borderRadius:6,barThickness:12}]},
+    options:{indexAxis:'y',plugins:{legend:{display:false},zero:{axis:'x'},forest:{pts:rows.map(r=>r.e),sig:rows.map(r=>r.sig)},tooltip:{callbacks:{label:c=>{const r=rows[c.dataIndex];return[` Elasticity ${f(r.e,2)}  (95% CI ${f(r.lo,2)} to ${f(r.hi,2)})`,` p = ${f(r.p,3)}, n = ${r.n}, ${r.sig?'significant':'not significant'}`]}}}},
+      scales:{x:ax({title:{display:true,text:'◆ elasticity (gold = significant at 5%)'}}),y:ax({grid:{display:false},ticks:{font:{size:10.5}}})}}});
+
+  $('#t-hyp').innerHTML='<tr><th>Hypothesis</th><th>Basis</th><th>p-value</th><th class="l">Decision</th></tr>'+D.hyp.map(h=>{const yo=h.hypothesis.includes('YoY'),sig=h.decision=='Reject H0';
+    return`<tr><td class="l" style="white-space:normal">${h.hypothesis.replace(' [YoY]','')}</td><td>${yo?'YoY':'Levels'}</td><td>${h.p_value<.001?'&lt;0.001':f(h.p_value,3)}</td><td class="l"><span class="badge ${sig?'b-g':'b-m'}">${sig?'Significant':'Not significant'}</span></td></tr>`}).join('');
+}
+
+/* ============ PATTERNS ============ */
+function renderPat(){
+  const R=Q(),by={};R.forEach(r=>(by[r.qn]=by[r.qn]||[]).push(r.dem));const qs=[1,2,3,4].filter(q=>by[q]);
+  const mu=qs.map(q=>mean(by[q])),sdv=qs.map(q=>sd(by[q]));
+  mk('c-season',{type:'bar',data:{labels:qs.map(q=>'Q'+q),datasets:[{label:'Average demand (t)',data:mu,backgroundColor:qs.map((q,i)=>mu[i]==Math.max(...mu)?cv('--gold'):al(cv('--gold'),.45)),borderRadius:8},
+    {type:'line',label:'+1 SD',data:mu.map((m,i)=>m+sdv[i]),showLine:false,pointRadius:4,pointBackgroundColor:cv('--mu'),borderColor:cv('--mu')},
+    {type:'line',label:'−1 SD',data:mu.map((m,i)=>m-sdv[i]),showLine:false,pointRadius:4,pointBackgroundColor:cv('--mu'),borderColor:cv('--mu')}]},
+    options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${f(c.parsed.y,1)} t`}}},scales:{x:ax({grid:{display:false}}),y:ax({title:{display:true,text:'tonnes per quarter'},beginAtZero:true})}}});
+  const hi=mu.indexOf(Math.max(...mu)),lo=mu.indexOf(Math.min(...mu));
+  $('#seasonnote').innerHTML=qs.length>1?`<b>Q${qs[hi]}</b> averages ${f(mu[hi],0)} t, which is <b>${f((mu[hi]/mu[lo]-1)*100,0)}% higher</b> than Q${qs[lo]} (${f(mu[lo],0)} t).`:'';
+  const ya=fullYears(R);
+  mk('c-share',{type:'bar',data:{labels:ya.map(r=>r.y),datasets:[{label:'Jewellery %',data:ya.map(r=>r.jew/r.dem*100),backgroundColor:cv('--gold'),stack:'a',borderRadius:3},{label:'Bar & coin %',data:ya.map(r=>r.bar/r.dem*100),backgroundColor:cv('--blue'),stack:'a',borderRadius:3}]},
+    options:{interaction:{mode:'index',intersect:false},plugins:{tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${f(c.parsed.y,1)}%`}}},scales:{x:ax({stacked:true,grid:{display:false}}),y:ax({stacked:true,max:100,ticks:{callback:v=>v+'%'}})}}});
+  const yrs=[...new Set(R.map(r=>r.y))],vals=R.map(r=>r.dem),mn=Math.min(...vals),mxv=Math.max(...vals);
+  $('#t-hm').innerHTML='<tr><th></th>'+[1,2,3,4].map(q=>`<th>Q${q}</th>`).join('')+'<th>Year total</th></tr>'+yrs.map(y=>{
+    const row=[1,2,3,4].map(q=>R.find(r=>r.y==y&&r.qn==q));const tot=row.every(Boolean)?row.reduce((s,r)=>s+r.dem,0):null;
+    return`<tr><td class="y">${y}</td>`+row.map(r=>{if(!r)return'<td style="color:var(--mu2)">–</td>';const t=(r.dem-mn)/(mxv-mn||1);return`<td title="${r.p}: jewellery ${f(r.jew,1)} t, bar &amp; coin ${f(r.bar,1)} t" style="background:${al(cv('--gold'),.08+t*.82)};color:${t>.55?'#2a1c00':cv('--tx')}">${f(r.dem,0)}</td>`}).join('')+`<td style="font-weight:700">${tot?f(tot,0):'–'}</td></tr>`}).join('');
+  const lab=R.map(r=>r.p),dates=R.map(r=>r.d);
+  const c2=$('#c-jew').getContext('2d'),c3=$('#c-bar').getContext('2d');
+  mk('c-jew',{type:'line',data:{labels:lab,datasets:[{label:'Jewellery (t)',data:R.map(r=>r.jew),borderColor:cv('--gold'),backgroundColor:gradient(c2,cv('--gold'),300,.3,0),fill:true,tension:.3,pointRadius:0,borderWidth:2.2}]},options:{interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},covid:{dates}},scales:{x:ax({ticks:{maxTicksLimit:8}}),y:ax({title:{display:true,text:'tonnes'}})}}});
+  mk('c-bar',{type:'line',data:{labels:lab,datasets:[{label:'Bar & coin (t)',data:R.map(r=>r.bar),borderColor:cv('--blue'),backgroundColor:gradient(c3,cv('--blue'),300,.3,0),fill:true,tension:.3,pointRadius:0,borderWidth:2.2}]},options:{interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},covid:{dates}},scales:{x:ax({ticks:{maxTicksLimit:8}}),y:ax({title:{display:true,text:'tonnes'}})}}});
+}
+
+/* ============ RESOURCES ============ */
+function renderRes(){
+  seg('#seg-metal',[['Gold','Gold'],['Silver','Silver']],'metal',renderRes);
+  const m=S.metal,d=D.res.filter(r=>r.m==m).sort((a,b)=>b.res-a.res),tot=d.reduce((s,r)=>s+r.res,0),rv=d.reduce((s,r)=>s+(r.rsv||0),0);
+  const top=d[0],t5=d.slice(0,5).reduce((s,r)=>s+r.res,0);
+  $('#res-kpis').innerHTML=kpi('k-gold','Total resources',`${f(tot,0)} t`,'metal content, A+B categories')+kpi('k-green','Proven reserves',`${f(rv,0)} t`,`${f(rv/tot*100,0)}% of resources`)+
+    kpi('k-blue','Largest state',top.s,`${f(top.res,0)} t · ${f(top.res/tot*100,1)}% of India`)+kpi('k-purple','Top-5 share',`${f(t5/tot*100,1)}%`,`${d.length} states reported`);
+  const t10=d.slice(0,10);
+  mk('c-res',{type:'bar',data:{labels:t10.map(r=>r.s),datasets:[{label:'Reserves (proven)',data:t10.map(r=>r.rsv||0),backgroundColor:cv('--gold'),stack:'a',borderRadius:4},{label:'Remaining resources',data:t10.map(r=>r.rem??Math.max(0,r.res-(r.rsv||0))),backgroundColor:al(cv('--silver'),.55),stack:'a',borderRadius:4}]},
+    options:{indexAxis:'y',interaction:{mode:'index',intersect:false},plugins:{tooltip:{callbacks:{footer:i=>'Total resources: '+f(t10[i[0].dataIndex].res,1)+' t'}}},scales:{x:ax({stacked:true,title:{display:true,text:'tonnes of metal'}}),y:ax({stacked:true,grid:{display:false}})}}});
+  const pal=[cv('--gold'),cv('--blue'),cv('--green'),cv('--purple'),cv('--red'),cv('--silver')];
+  const sl=d.slice(0,5),rest=tot-sl.reduce((s,r)=>s+r.res,0);
+  mk('c-conc',{type:'doughnut',data:{labels:[...sl.map(r=>r.s),'Other states'],datasets:[{data:[...sl.map(r=>r.res),rest],backgroundColor:pal,borderColor:cv('--card'),borderWidth:3,hoverOffset:6}]},
+    options:{cutout:'62%',plugins:{legend:{position:'bottom'},tooltip:{callbacks:{label:c=>` ${c.label}: ${f(c.parsed,1)} t (${f(c.parsed/tot*100,1)}%)`}}}}});
+  const mxr=d[0].res;
+  $('#t-res-all').innerHTML='<tr><th>State</th><th>Resources (t)</th><th>Reserves (t)</th><th>Remaining (t)</th><th class="l">Share of India</th></tr>'+d.map(r=>`<tr><td>${r.s}</td><td>${f(r.res,2)}</td><td>${f(r.rsv,2)}</td><td>${f(r.rem,2)}</td><td class="l">${f(r.sh,1)}%<span class="meter" style="width:${Math.max(2,r.res/mxr*120)}px"></span></td></tr>`).join('');
+}
+
+/* ============ SUPPLY ============ */
+function renderSup(){
+  const A=D.a.filter(r=>r.ts!=null),AL=A[A.length-1],A20=A.find(r=>r.y==2020);
+  const peak=A.reduce((a,b)=>b.ts>a.ts?b:a);
+  $('#sup-kpis').innerHTML=kpi('k-gold',`Total gold supply · ${AL.y}`,`${f(AL.ts,0)} t`,'WGC India supply')+kpi('k-red','Import dependence',`${f(AL.nis,1)}%`,`net imports ${f(AL.ni,0)} t`)+
+    kpi('k-green','Scrap / recycled share',`${f(AL.scs,1)}%`,`${f(AL.sc,0)} t recycled`)+kpi('k-blue','Supply peak',`${f(peak.ts,0)} t`,`${peak.y} · COVID low ${f(A20.ts,0)} t in 2020`);
+  mk('c-supply',{type:'bar',data:{labels:A.map(r=>r.y),datasets:[{label:'Net bullion imports',data:A.map(r=>r.ni),backgroundColor:cv('--gold'),stack:'a',borderRadius:3},{label:'Scrap (recycled)',data:A.map(r=>r.sc),backgroundColor:cv('--green'),stack:'a',borderRadius:3},{label:'Other domestic',data:A.map(r=>r.dom),backgroundColor:cv('--blue'),stack:'a',borderRadius:3}]},
+    options:{interaction:{mode:'index',intersect:false},plugins:{tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${f(c.parsed.y,0)} t`,footer:i=>'Total: '+f(i.reduce((s,x)=>s+x.parsed.y,0),0)+' t'}}},scales:{x:ax({stacked:true,grid:{display:false}}),y:ax({stacked:true,title:{display:true,text:'tonnes'}})}}});
+  mk('c-dep',{type:'line',data:{labels:A.map(r=>r.y),datasets:[{label:'Net imports %',data:A.map(r=>r.nis),borderColor:cv('--gold'),backgroundColor:al(cv('--gold'),.12),fill:true,tension:.3,borderWidth:2.5,pointRadius:3},
+    {label:'Scrap %',data:A.map(r=>r.scs),borderColor:cv('--green'),backgroundColor:al(cv('--green'),.12),fill:true,tension:.3,borderWidth:2.5,pointRadius:3}]},
+    options:{interaction:{mode:'index',intersect:false},plugins:{tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${f(c.parsed.y,1)}%`}}},scales:{x:ax({grid:{display:false},ticks:{maxRotation:0,autoSkip:true,maxTicksLimit:7}}),y:ax({min:0,max:100,ticks:{callback:v=>v+'%'}})}}});
+  const P=D.a.filter(r=>r.gp!=null);
+  mk('c-gprod',{type:'bar',data:{labels:P.map(r=>'FY'+r.y),datasets:[{label:'Gold production (t)',data:P.map(r=>r.gp),backgroundColor:cv('--gold'),borderRadius:6}]},
+    options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${f(c.parsed.y,1)} t`}}},scales:{x:ax({grid:{display:false},ticks:{maxRotation:0}}),y:ax({beginAtZero:true,title:{display:true,text:'tonnes'}})}}});
+  const S1=D.a.filter(r=>r.sp!=null||r.si!=null);
+  mk('c-silver',{type:'bar',data:{labels:S1.map(r=>'FY'+r.y),datasets:[{label:'Production (t)',data:S1.map(r=>r.sp),backgroundColor:cv('--silver'),borderRadius:5},{label:'Imports (t)',data:S1.map(r=>r.si),backgroundColor:cv('--blue'),borderRadius:5},{label:'Exports (t)',data:S1.map(r=>r.se),backgroundColor:cv('--purple'),borderRadius:5}]},
+    options:{interaction:{mode:'index',intersect:false},plugins:{tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${f(c.parsed.y,0)} t`}}},scales:{x:ax({grid:{display:false}}),y:ax({type:'logarithmic',title:{display:true,text:'tonnes (log scale)'}})}}});
+  $('#t-cross').innerHTML='<tr><th>Quarter</th><th>Our demand (t)</th><th>WGC headline (t)</th><th>Gap: ETF + industrial (t)</th><th>Gap %</th><th>Jewellery diff (t)</th><th>Bar &amp; coin diff (t)</th><th>Price diff (₹)</th></tr>'+
+    D.cross.map(r=>`<tr><td>${r.Period}</td><td>${f(r['Our_Demand_t(Jew+Bar)'],1)}</td><td>${f(r.WGC_Headline_Total_t,1)}</td><td>${f(r.Gap_ETF_plus_Industrial_t,1)}</td><td><span class="badge ${r.Gap_pct_of_headline>10?'b-y':'b-g'}">${f(r.Gap_pct_of_headline,1)}%</span></td><td>${f(r.Jewellery_diff_t,2)}</td><td>${f(r.BarCoin_diff_t,2)}</td><td>${f(r.Price_INR_diff,0)}</td></tr>`).join('');
+}
+
+/* ============ MODELS ============ */
+function renderMod(){
+  const mc=D.mc,short=m=>m.replace(' (same quarter last year)','').replace(' (YoY elasticity)','').replace(' (YoY features)','').replace(' (last quarter)',' (last qtr)');
+  const best=Math.min(...mc.map(m=>m.RMSE));
+  mk('c-rmse',{type:'bar',data:{labels:mc.map(m=>short(m.Model)),datasets:[{label:'RMSE (t)',data:mc.map(m=>m.RMSE),backgroundColor:mc.map(m=>m.RMSE==best?cv('--gold'):al(cv('--silver'),.5)),borderRadius:6}]},
+    options:{indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` RMSE ${f(c.parsed.x,1)} t`}}},scales:{x:ax({beginAtZero:true,title:{display:true,text:'RMSE, tonnes (lower is better)'}}),y:ax({grid:{display:false}})}}});
+  $('#t-mod-tab').innerHTML='<tr><th>Model</th><th>Quarters</th><th>MAE (t)</th><th>RMSE (t)</th><th>MAPE</th><th>R²</th></tr>'+mc.map(m=>`<tr><td>${m.Model}${m.RMSE==best?' <span class="badge b-y">best</span>':''}</td><td>${m.n_test_quarters}</td><td>${f(m.MAE,1)}</td><td>${f(m.RMSE,1)}</td><td>${f(m.MAPE_pct,1)}%</td><td>${f(m.R2,2)}</td></tr>`).join('');
+  const mp=D.mp,ls=(l,k,c,dash,w=2,hide)=>({label:l,data:mp.map(r=>r[k]),borderColor:cv(c),borderWidth:w,borderDash:dash||[],pointRadius:w>2?3:0,tension:.2,hidden:!!hide});
+  mk('c-bt',{type:'line',data:{labels:mp.map(r=>r.d),datasets:[ls('Actual','a','--tx',null,3.2),ls('Seasonal naive','sn','--gold',[6,4]),ls('Ridge (YoY)','rg','--green',[6,4]),ls('Random Forest (YoY)','rf','--blue',[6,4]),ls('Price-adjusted seasonal','pa','--purple',[6,4]),ls('Naive (last quarter)','nl','--red',[2,3],2,true)]},
+    options:{interaction:{mode:'index',intersect:false},plugins:{tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${f(c.parsed.y,1)} t`}}},scales:{x:ax({ticks:{maxTicksLimit:10}}),y:ax({title:{display:true,text:'tonnes per quarter'}})}}});
+  const nm={Gold_Price_Change:'Price change (QoQ)',Gold_Demand_Lag_4:'Demand 4 quarters ago',Gold_Price:'Gold price level',Quarter_Number:'Quarter of year',Gold_Demand_Lag_2:'Demand 2 quarters ago',Gold_Demand_Lag_1:'Demand last quarter'};
+  const fi=[...D.fi].sort((a,b)=>b.importance-a.importance);
+  mk('c-fi',{type:'bar',data:{labels:fi.map(r=>nm[r.feature]||r.feature),datasets:[{data:fi.map(r=>r.importance*100),backgroundColor:fi.map((r,i)=>al(cv('--gold'),1-i*.12)),borderRadius:6}]},
+    options:{indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${f(c.parsed.x,1)}% importance`}}},scales:{x:ax({ticks:{callback:v=>v+'%'}}),y:ax({grid:{display:false}})}}});
+  const sc=D.scen;$('#scperiod').textContent=sc[0].period;
+  $('#scen').innerHTML=sc.map(s=>`<div class="sc s4"><div class="t">${s.scenario}</div><div class="p">₹${f(s.assumed_price_INR_10g)} <small style="color:var(--mu);font-weight:500">per 10 g</small></div>
+    <div class="r"><span>Seasonal naive baseline</span><b>${f(s.seasonal_naive_t,0)} t</b></div>
+    <div class="r"><span>Model estimate (full sample)</span><b>${f(s.demand_full_sample_t,0)} t</b></div><div class="r"><span>Plausible range</span><span>${s.range_full_sample_t} t</span></div>
+    <div class="r"><span>Model estimate (post-2022 Q2)</span><b>${f(s.demand_post_2022Q2_t,0)} t</b></div><div class="r"><span>Plausible range</span><span>${s.range_post_2022Q2_t} t</span></div></div>`).join('');
+  $('#scnote2').innerHTML=`<b>Handle with care:</b> these are conditional estimates, not forecasts. The assumed YoY log price change (${f(sc[0].yoy_log_price_change,2)} to ${f(sc[2].yoy_log_price_change,2)}) is large but within the historical maximum of ${f(sc[0].max_historical_yoy_log_price_change,2)}, and the back-test shows a seasonal naive baseline is hard to beat.`;
+}
+
+/* ============ ABOUT ============ */
+function renderAbout(){
+  const src=[['India gold demand (quarterly)','WGC Gold Demand Trends Q2 2026: Jewellery, Bar &amp; Coin','2010 Q1 – 2026 Q2'],['Gold price','WGC: LBMA US$/oz and domestic ₹/10 g (MCX-based)','2010 Q1 – 2026 Q2'],['India gold supply','WGC India Supply sheet','2012 – 2025'],
+   ['Cross-check','WGC India Focus Q2 2026 &amp; Q1 workbook','2025 Q1 – 2026 Q2'],['Gold &amp; silver resources','IBM NMI At a Glance 2025, Tables 5.15 / 5.37','1 Apr 2025'],['Mine production','IBM IMIG 2022-23 &amp; Indian Minerals Yearbook 2024','FY2013 – FY2023'],['Silver trade','IMYB 2024, Tables 4 &amp; 11','FY2021 – FY2023']];
+  $('#t-src').innerHTML='<tr><th>Dataset</th><th class="l">Source</th><th>Period</th></tr>'+src.map(s=>`<tr><td class="wrapc">${s[0]}</td><td class="l wrapc">${s[1]}</td><td>${s[2]}</td></tr>`).join('');
+  const defs=['<b>Demand</b> = jewellery + bar &amp; coin. WGC\'s headline India total also includes ETF and industrial demand (3–15% more).','Jewellery is <b>gross</b> (includes recycled gold); bar &amp; coin is <b>net</b>.','Production is fiscal-year; imports and demand are calendar-year, so the match is approximate.','Resource figures are a <b>single snapshot</b> (1 Apr 2025), not a time series.','<b>Resources ≠ reserves ≠ RBI holdings.</b> Never combine them.','Small samples, revisions and mixed frequencies limit precision. Correlation is not causation.'];
+  $('#defs').innerHTML=defs.map((t,i)=>`<div class="f"><i>${i+1}</i><div>${t}</div></div>`).join('');
+}
+
+/* ============ boot ============ */
+applyDefaults();show('overview');
+</script>
+</body>
+</html>

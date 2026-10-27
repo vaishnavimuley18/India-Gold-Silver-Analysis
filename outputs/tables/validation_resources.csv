@@ -1,0 +1,12 @@
+,dtype,missing,min,max,mean,median
+Mineral,str,0.0,,,,
+Production,float64,25.0,,,,
+Remaining_Resources,float64,0.0,0.23,16658.08,713.1116400000002,16.33
+Reserves,float64,0.0,0.0,9541.57,386.0304,0.0
+Resource_Share,float64,0.0,0.0008575769402184232,97.68789426866789,8.000000000000002,0.315725561627201
+Resources,float64,0.0,0.23,26199.65,1099.14204,19.8
+State,str,0.0,,,,
+Year,int64,0.0,2025.0,2025.0,2025.0,2025.0
+__rows__,,25.0,,,,
+__duplicate_rows__,,0.0,,,,
+__flags__,none,,,,,

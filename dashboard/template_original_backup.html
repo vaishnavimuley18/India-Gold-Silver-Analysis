@@ -1,0 +1,49 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>India Gold & Silver - Analytics Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{--bg:#fafaf7;--card:#fff;--tx:#1f2328;--mu:#656d76;--bd:#d8dee4;--a:#b8860b;--b:#1f6feb;--c:#cf222e}
+@media(prefers-color-scheme:dark){:root{--bg:#161b22;--card:#1c2128;--tx:#e6edf3;--mu:#8b949e;--bd:#30363d;--a:#e3b341;--b:#58a6ff;--c:#ff7b72}}
+*{box-sizing:border-box}body{margin:0;font:14px/1.5 system-ui,sans-serif;background:var(--bg);color:var(--tx);padding:16px;max-width:1100px;margin:auto}
+h1{font-size:20px;margin:0}p.s{color:var(--mu);margin:2px 0 14px}.g{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.k{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));margin-bottom:12px}
+.c{background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:12px}.c h2{font-size:13px;margin:0 0 6px}.c small{color:var(--mu);display:block;margin-top:6px}
+.k .c b{font-size:22px;display:block}.k .c span{color:var(--mu);font-size:12px}select{background:var(--card);color:var(--tx);border:1px solid var(--bd);border-radius:6px;padding:2px 6px}
+canvas{max-height:260px}table{border-collapse:collapse;width:100%;font-size:12px}th,td{border-bottom:1px solid var(--bd);padding:3px 6px;text-align:right}th:first-child,td:first-child,th:nth-child(2),td:nth-child(2){text-align:left}.w{overflow-x:auto}
+</style></head><body>
+<h1>India's Gold & Silver: prices, demand, supply and resources</h1>
+<p class="s">Sources: World Gold Council (Q2 2026 tables), Indian Bureau of Mines (NMI 2025, IMYB). Demand = jewellery + bar & coin. Associations, not causation.</p>
+<div class="k" id="k"></div>
+<div class="g">
+<div class="c"><h2>Gold price, INR per 10 g</h2><canvas id="p"></canvas></div>
+<div class="c"><h2>Demand by sector, tonnes per quarter</h2><canvas id="d"></canvas></div>
+<div class="c"><h2>YoY change: demand vs price <select id="ys"></select></h2><canvas id="s"></canvas><small id="sn"></small></div>
+<div class="c"><h2>Resources by state, tonnes of metal <select id="ms"><option>Gold</option><option>Silver</option></select></h2><canvas id="r"></canvas><small>Snapshot as on 1 April 2025 (IBM NMI). Resources are geological estimates, not RBI reserves.</small></div>
+<div class="c"><h2>Walk-forward back-test, tonnes</h2><canvas id="m"></canvas><small id="mn"></small></div>
+<div class="c"><h2>Supply: net bullion imports vs scrap, % of WGC total supply</h2><canvas id="u"></canvas></div>
+</div>
+<div class="c" style="margin-top:12px"><h2>Elasticity robustness (YoY log-log slope, Newey-West)</h2><div class="w"><table id="t"></table></div>
+<small>Slope = % change in demand per 1% change in price. Seasonal naive beat all price-based models in the back-test; silver (H4) and RBI holdings were not analysed (no data supplied).</small></div>
+<script>
+const D=/*DATA*/;const tx=getComputedStyle(document.documentElement).getPropertyValue('--tx'),A='#b8860b',B='#1f6feb',R='#cf222e',G='#2da44e';
+Chart.defaults.color=tx.trim()||'#888';Chart.defaults.font.size=11;const L=D.q.map(r=>r.p);let ch={};
+const mk=(id,cfg)=>{if(ch[id])ch[id].destroy();ch[id]=new Chart(document.getElementById(id),cfg)};
+const f=(v,n=0)=>Number(v).toLocaleString('en-IN',{maximumFractionDigits:n});
+const last=D.q[D.q.length-1],jr=D.rob.find(r=>r.series=='Jewellery demand'&&r.sample.startsWith('Full'));
+document.getElementById('k').innerHTML=[['Latest price ('+last.p+')','Rs '+f(last.price)],['Demand '+last.p,f(last.dem,1)+' t'],['Jewellery elasticity (YoY)',f(jr.elasticity,2)],['Best back-test RMSE',f(D.mc[0].RMSE,1)+' t']].map(x=>`<div class=c><span>${x[0]}</span><b>${x[1]}</b></div>`).join('');
+mk('p',{type:'line',data:{labels:L,datasets:[{label:'INR/10 g',data:D.q.map(r=>r.price),borderColor:A,pointRadius:0}]},options:{plugins:{legend:{display:false}},scales:{x:{ticks:{maxTicksLimit:8}}}}});
+mk('d',{type:'bar',data:{labels:L,datasets:[{label:'Jewellery',data:D.q.map(r=>r.jew),backgroundColor:A},{label:'Bar & coin',data:D.q.map(r=>r.bar),backgroundColor:B}]},options:{scales:{x:{stacked:true,ticks:{maxTicksLimit:8}},y:{stacked:true}}}});
+const ys={'Jewellery':'jy','Total demand':'ty','Bar & coin':'by'};const sel=document.getElementById('ys');Object.keys(ys).forEach(k=>sel.add(new Option(k)));
+function sc(){const k=ys[sel.value],pts=D.q.filter(r=>r[k]!=null&&r.py!=null),cv=r=>r.d>='2020-03-31'&&r.d<='2022-06-30';
+const e=D.rob.find(r=>r.series==({jy:'Jewellery demand',ty:'Total demand',by:'Investment (bar & coin) demand'})[k]&&r.sample.startsWith('Full'));
+mk('s',{type:'scatter',data:{datasets:[{label:'Other quarters',data:pts.filter(r=>!cv(r)).map(r=>({x:r.py,y:r[k]})),backgroundColor:B},{label:'COVID window',data:pts.filter(cv).map(r=>({x:r.py,y:r[k]})),backgroundColor:R}]},options:{scales:{x:{title:{display:true,text:'YoY log change in price'}},y:{title:{display:true,text:'YoY log change in demand'}}}}});
+document.getElementById('sn').textContent='Elasticity '+f(e.elasticity,2)+' (95% CI '+f(e.ci_low,2)+' to '+f(e.ci_high,2)+'), n='+e.n+(e.significant_5pct?' - significant at 5%':' - not significant at 5%');}
+sel.onchange=sc;sc();
+function rs(){const m=document.getElementById('ms').value,d=D.res.filter(r=>r.m==m).sort((a,b)=>b.res-a.res).slice(0,10);
+mk('r',{type:'bar',data:{labels:d.map(r=>r.s),datasets:[{label:'Total resources',data:d.map(r=>r.res),backgroundColor:A},{label:'of which reserves',data:d.map(r=>r.rsv),backgroundColor:B}]},options:{indexAxis:'y'}})}
+document.getElementById('ms').onchange=rs;rs();
+const mp=D.mp;mk('m',{type:'line',data:{labels:mp.map(r=>r.d),datasets:[{label:'Actual',data:mp.map(r=>r.a),borderColor:tx,borderWidth:2},{label:'Seasonal naive',data:mp.map(r=>r.sn),borderColor:B,borderDash:[4,3]},{label:'Random Forest',data:mp.map(r=>r.rf),borderColor:G,borderDash:[4,3]},{label:'Price-adjusted',data:mp.map(r=>r.pa),borderColor:R,borderDash:[4,3]}]},options:{elements:{point:{radius:2}}}});
+document.getElementById('mn').textContent=D.mc.map(r=>r.Model.split(' (')[0]+': RMSE '+f(r.RMSE,1)).join(' | ');
+mk('u',{type:'line',data:{labels:D.a.map(r=>r.y),datasets:[{label:'Net bullion imports %',data:D.a.map(r=>r.ni),borderColor:A},{label:'Scrap %',data:D.a.map(r=>r.sc),borderColor:G}]}});
+document.getElementById('t').innerHTML='<tr><th>Series</th><th>Sample</th><th>n</th><th>Elasticity</th><th>p (HAC)</th></tr>'+D.rob.map(r=>`<tr><td>${r.series}</td><td>${r.sample.replace(' (HAC)','')}</td><td>${r.n}</td><td>${f(r.elasticity,2)}</td><td>${f(r.p_value_hac,3)}</td></tr>`).join('');
+</script></body></html>

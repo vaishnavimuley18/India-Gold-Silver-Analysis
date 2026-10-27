@@ -1,0 +1,4 @@
+period,scenario,assumed_price_INR_10g,yoy_log_price_change,seasonal_naive_t,demand_full_sample_t,range_full_sample_t,demand_post_2022Q2_t,range_post_2022Q2_t,max_historical_yoy_log_price_change
+2026Q3,Price 10% below latest quarter,135670,0.282,216.6,189.8,118 to 262,209.3,138 to 281,0.595
+2026Q3,Price flat at latest quarter,150745,0.388,216.6,176.3,105 to 248,205.8,134 to 278,0.595
+2026Q3,Price 10% above latest quarter,165819,0.483,216.6,164.9,93 to 237,202.8,131 to 274,0.595

@@ -1,0 +1,4 @@
+hypothesis,test,n,statistic_t,p_value,alpha,decision,interpretation
+H1 gold price vs gold demand,Pearson correlation t-test,66,-2.124724577880363,0.0374772178740556,0.05,Reject H0,Significant negative association (not proof of causation).
+H2 gold price vs jewellery demand,Pearson correlation t-test,66,-3.0062598111231678,0.0037754377941904,0.05,Reject H0,Significant negative association (not proof of causation).
+H3 gold price vs investment demand,Pearson correlation t-test,66,-0.1263213579653982,0.8998735662000049,0.05,Fail to reject H0,No significant negative association (not proof of causation).
